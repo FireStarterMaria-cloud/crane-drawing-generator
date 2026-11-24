@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\DesignRequest;
 use App\Models\Design;
 use App\Services\CraneCalculator;
+use App\Services\CraneSvgRenderer;
 use Illuminate\Http\Request;
 
 class DesignController extends Controller
 {
-    public function __construct(private CraneCalculator $calculator)
-    {
+    public function __construct(
+        private CraneCalculator $calculator,
+        private CraneSvgRenderer $renderer,
+    ) {
     }
 
     // GET /api/designs?search=abc
@@ -59,6 +62,20 @@ class DesignController extends Controller
         return response()->json(['data' => $this->payload($request->validated())]);
     }
 
+    // GET /api/designs/{id}/drawing.svg (add ?download=1 to download the file)
+    public function drawing(Request $request, Design $design)
+    {
+        $inputs = $design->toArray();
+        $svg = $this->renderer->render($inputs, $this->calculator->calculate($inputs), $design->name);
+
+        $disposition = $request->boolean('download') ? 'attachment' : 'inline';
+
+        return response($svg, 200, [
+            'Content-Type' => 'image/svg+xml; charset=utf-8',
+            'Content-Disposition' => $disposition . '; filename="crane-design-' . $design->id . '.svg"',
+        ]);
+    }
+
     // optional fields not sent become null, so PUT really replaces the design
     private function data(DesignRequest $request): array
     {
@@ -68,7 +85,7 @@ class DesignController extends Controller
         return array_merge(array_fill_keys($optional, null), $request->validated());
     }
 
-    // inputs + derived values + warnings. Derived values are not stored in the DB
+    // inputs + derived values + warnings + svg. Derived values are not stored in the DB
     private function payload(array $inputs): array
     {
         $calc = $this->calculator->calculate($inputs);
@@ -76,6 +93,7 @@ class DesignController extends Controller
         return $inputs + [
             'derived' => $calc['derived'],
             'warnings' => $calc['warnings'],
+            'svg' => $this->renderer->render($inputs, $calc, $inputs['name'] ?? 'Untitled design'),
         ];
     }
 }
