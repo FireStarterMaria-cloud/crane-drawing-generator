@@ -1,8 +1,7 @@
 # AI Log
 
 ## Tools I used
-
-I used Gemini a little at the start, only to think about the assignment before I set up the project. After that I used Claude (free plan, chat) for most of the work: planning, the Laravel API, validation, the calculator, the SVG drawing, the UI, the tests, the README and this log.
+I used Gemini (free) in three ways. At the start I used it to think about the assignment and to help write my first prompt for Claude. Later I showed it screenshots of my first drawing and asked what looked wrong. It pointed out overlapping labels on the left side of the plan view. After that I asked Claude to fix the lines and text. At the end I asked it for a summary of my work. After that I used Claude (free plan, chat) for most of the work: planning, the Laravel API, validation, the calculator, the SVG drawing, the UI, the tests, the README and this log.
 
 I ran everything myself in VS Code. I pasted the code, ran php artisan test and checked the drawing in the browser.
 
@@ -21,6 +20,8 @@ Claude gave me the files, I pasted them, ran the tests, looked at the result in 
 3. After the first version I told Claude that the drawing looked very different from the reference and that lines and text were touching. I asked for a drawing that looks like an experienced engineer made it. This gave me the new drawing with front view, plan view, end view and detail Z.
 
 ## One time the AI was wrong
+
+Gemini's summary had a mistake. It said the wheelbase is 3600 mm, but the reference drawing and my drawing show 3800 mm. So I did not copy its summary. I wrote this log from what really happened.
 
 In the first drawing Claude drew the wheels as circles in the front view. This is wrong. The wheels roll along the runway and the front view looks along the runway, so the wheels should look like thin strips. Circles belong only in the end view.
 
