@@ -1,66 +1,123 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Parametric Overhead Crane Drawing Generator
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A small full stack web app that draws a dimensioned 2D drawing of a single girder overhead (EOT) crane from user inputs. Users can save designs, list them, reopen them and edit them.
 
-## About Laravel
+Built as a take-home assignment for Modern Crane Co.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## What it does
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Form with the crane inputs (capacity, span, lifting height, runway height, end clearance, wheel diameter, wheelbase and some optional data).
+- Live drawing (SVG) while you type: front elevation, plan view, end view, detail Z, technical data and title block.
+- Every dimension is labelled. Values that are **not** in the reference drawing are marked **(Estimate)**.
+- Save, list, search, reopen, edit and delete designs.
+- Download the drawing as an SVG file.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Stack and why
 
-## Learning Laravel
+| Part | Choice | Why |
+|---|---|---|
+| Backend | Laravel 12 (PHP 8.2+) | I know it well. Validation, routing and tests are built in. |
+| Database | SQLite | Just one file, nothing to install. Easy for a reviewer to run. |
+| Frontend | Blade + plain JavaScript | The UI only calls the API. No build step, no Node needed. |
+| Drawing | SVG built on the server (PHP) | One source of truth. Easy to test and to download. |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## How to run
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+You need PHP 8.2 or newer (with `pdo_sqlite`) and Composer.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+git clone https://github.com/FireStarterMaria-cloud/crane-drawing-generator.git
+cd crane-drawing-generator
+composer install
+```
 
-## Laravel Sponsors
+Create the `.env` file and the database file.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Windows (cmd or PowerShell):
+```bash
+copy .env.example .env
+type nul > database\database.sqlite
+```
 
-### Premium Partners
+Mac or Linux:
+```bash
+cp .env.example .env
+touch database/database.sqlite
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Then:
+```bash
+php artisan key:generate
+php artisan migrate
+php artisan serve
+```
 
-## Contributing
+Open http://127.0.0.1:8000. If port 8000 is busy, use `php artisan serve --port=8001`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Run the tests:
+```bash
+php artisan test
+```
 
-## Code of Conduct
+## API
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+All routes are under `/api` and answer in JSON (except the SVG).
 
-## Security Vulnerabilities
+| Method | Route | What it does |
+|---|---|---|
+| GET | `/api/meta/limits` | Limits, defaults and sources. The form is built from this. |
+| POST | `/api/designs/preview` | Validates and calculates, returns the drawing. Does not save. |
+| GET | `/api/designs?search=&page=` | List designs (10 per page). |
+| POST | `/api/designs` | Create a design (201). |
+| GET | `/api/designs/{id}` | One design with derived values and drawing. |
+| PUT | `/api/designs/{id}` | Update a design (full replace). |
+| DELETE | `/api/designs/{id}` | Delete a design (204). |
+| GET | `/api/designs/{id}/drawing.svg` | The drawing as SVG. Add `?download=1` to download it. |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Errors: validation errors return **422** with a JSON `errors` object, unknown ids return **404** in JSON.
 
-## License
+## Validation
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Done on the server in `app/Http/Requests/DesignRequest.php`.
+
+- Range checks for every input. The numbers live in `config/crane.php`.
+- Cross-field rules, for example the runway height must be at least lifting height + 400 mm, and the wheelbase must be 10 to 25 percent of the span.
+- Soft warnings (not errors), for example a heavy load on a long span for a single girder crane.
+
+## Where the numbers come from
+
+Everything is in `config/crane.php` with a source note, and every derived value in the API response has a `source` and an `estimate` flag.
+
+- **From the reference drawing:** 10 t / 25 m sample, the 25270 overall length, 3800 wheelbase, 4310 end carriage length, 8321 runway height, 7900 lifting height, Min.235 end clearance, rail 50x30, wheel diameter 250, wheel width 75, FEM A5, and the 74.8 kN wheel load for checking.
+- **Estimates (marked in the app):** all input ranges, wheelbase ratio (3800/25000 from one drawing), girder depth (span / 20), the +270 and +510 offsets for other sizes, weights for other sizes (scaled from one data point), the wheel load formula (no dynamic factors) and the hook approach minimum.
+- The wheel load formula gives 72.6 kN for the sample. The drawing shows 74.8 kN (about 3 percent difference). A test checks this.
+
+## Known limitations
+
+- It is a schematic drawing for offers, not a manufacturing drawing. Trolley, hook, runway beam, wall bracket and girder width are symbols, not to scale.
+- Only single girder, top running cranes. No double girder, no jib cranes.
+- No user accounts. All designs are shared.
+- Weight and wheel load are rough estimates from one reference drawing. Real values need engineering data.
+- No section A-A copy, pendant, power feed point or full title block like the reference.
+- Not checked against any standard (FEM, ISO). Nothing here is certified.
+
+## Project structure
+
+```
+app/Http/Controllers/Api/   DesignController, MetaController
+app/Http/Requests/          DesignRequest (validation)
+app/Models/Design.php
+app/Services/               CraneCalculator (numbers), CraneSvgRenderer (drawing)
+config/crane.php            limits, rules and sources
+database/migrations/        designs table
+resources/views/app.blade.php, public/js/app.js   the UI
+tests/                      unit and feature tests
+```
+
+## Time spent
+Real hours: about 2.5 hours of coding and testing, plus __ for DECISIONS.md, AI_LOG.md and the video.
+(setup 35 min, backend and tests 25 min, first drawing 25 min, UI 20 min, improved drawing 30 min, README 10 min)
+
+## AI use
+
+See `AI_LOG.md`. `DECISIONS.md` was written by me without AI.
