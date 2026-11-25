@@ -28,8 +28,7 @@ return [
         'gravity'                    => 9.81,
     ],
 
-    'rail' => ['width_mm' => 50, 'height_mm' => 30], // Drawing Detail Z
-
+       'rail' => ['width_mm' => 50, 'height_mm' => 30, 'wheel_width_mm' => 75], // Drawing Detail Z
     // Only one data point, so weights are weak estimates. User can override.
     'weights' => [
         'ref_crane_kg'      => 8910,

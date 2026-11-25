@@ -63,4 +63,33 @@ class DrawingTest extends TestCase
     {
         $this->getJson('/api/designs/999/drawing.svg')->assertNotFound();
     }
+
+        public function test_drawing_has_all_views(): void
+    {
+        $id = $this->postJson('/api/designs', $this->valid())->json('data.id');
+
+        $svg = $this->get("/api/designs/{$id}/drawing.svg")->getContent();
+
+        foreach (['FRONT ELEVATION', 'PLAN VIEW', 'END VIEW', 'DETAIL Z', 'TECHNICAL DATA'] as $text) {
+            $this->assertStringContainsString($text, $svg);
+        }
+    }
+
+    public function test_smallest_and_biggest_designs_render_valid_svg(): void
+    {
+        $small = $this->valid([
+            'capacity_t' => 1, 'span_mm' => 5000, 'lifting_height_mm' => 2000,
+            'runway_height_mm' => 3000, 'wheel_diameter_mm' => 160, 'duty_group' => 'A3',
+        ]);
+        $big = $this->valid([
+            'capacity_t' => 20, 'span_mm' => 30000, 'lifting_height_mm' => 15000,
+            'runway_height_mm' => 20000, 'end_clearance_mm' => 1000, 'wheel_diameter_mm' => 400,
+            'duty_group' => 'A7', 'wheelbase_mm' => 7500,
+        ]);
+
+        foreach ([$small, $big] as $input) {
+            $res = $this->postJson('/api/designs/preview', $input)->assertOk();
+            $this->assertNotFalse(simplexml_load_string($res->json('data.svg')));
+        }
+    }
 }
