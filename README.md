@@ -29,35 +29,19 @@ You need PHP 8.2 or newer (with `pdo_sqlite`) and Composer.
 git clone https://github.com/FireStarterMaria-cloud/crane-drawing-generator.git
 cd crane-drawing-generator
 composer install
-```
-
-Create the `.env` file and the database file.
-
-Windows (cmd or PowerShell):
-```bash
-copy .env.example .env
-type nul > database\database.sqlite
-```
-
-Mac or Linux:
-```bash
-cp .env.example .env
-touch database/database.sqlite
-```
-
-Then:
-```bash
+php -r "file_exists('.env') || copy('.env.example', '.env');"
+php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
 php artisan key:generate
 php artisan migrate
 php artisan serve
 ```
 
+The two `php -r` lines create the `.env` file and the empty SQLite database file. They work the same on Windows, Mac and Linux.
+
 Open http://127.0.0.1:8000. If port 8000 is busy, use `php artisan serve --port=8001`.
 
-Run the tests:
-```bash
-php artisan test
-```
+I tested these steps on a fresh clone of the repository.
+
 
 ## API
 
