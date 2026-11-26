@@ -40,7 +40,7 @@ The two `php -r` lines create the `.env` file and the empty SQLite database file
 
 Open http://127.0.0.1:8000. If port 8000 is busy, use `php artisan serve --port=8001`.
 
-I tested these steps on a fresh clone of the repository.
+I tested these steps on a fresh clone on Windows.
 
 
 ## API
@@ -99,9 +99,9 @@ tests/                      unit and feature tests
 ```
 
 ## Time spent
-Real hours: about 2.5 hours of coding and testing, plus __ for DECISIONS.md, AI_LOG.md and the video.
-(setup 35 min, backend and tests 25 min, first drawing 25 min, UI 20 min, improved drawing 30 min, README 10 min)
+Real hours: about 3 hours total (around 2.5 hours of coding, testing, and documentation, plus 15 minutes for the demo video).
+(setup 35 min, backend and tests 25 min, first drawing 25 min, UI 20 min, improved drawing 30 min, README, DECISIONS.md & AI_LOG.md 30 min, demo video 15 min)
 
 ## AI use
 
-See `AI_LOG.md`. `DECISIONS.md` was written by me without AI.
+See  `DECISIONS.md` was written by me without AI.
